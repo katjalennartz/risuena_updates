@@ -199,7 +199,7 @@ function risuenaupdatefile_replace_templates($updated_templates)
 
 /**
  * Überschreibt die MyBB Master-Templates (sid = -2)
- * mit dem aktuellen Stand aus dem Plugin-Templatearray.
+ * immer komplett mit dem aktuellen Stand aus dem Plugin-Templatearray.
  *
  * @param array $templates Aktuelle Plugin-Templates
  */
@@ -209,34 +209,34 @@ function risuenaupdatefile_sync_master_templates($templates)
 
   foreach ($templates as $template) {
 
-    $title = $db->escape_string($template['title']);
-    $master_template = $db->fetch_array($db->simple_select("templates", "tid, template", "title = '{$title}' AND sid = -2"));
-    $new_template = $template['template'];
+    $title = $db->escape_string($template["title"]);
 
-    //template existiert schon
-    if (!empty($master_template['tid'])) {
+    $master_template = $db->fetch_array($db->simple_select("templates", "tid", "title = '{$title}' AND sid = -2"));
 
-      //testen ob es änderungen gab
-      if ($master_template['template'] != $new_template) {
-        $update = array("template" => $db->escape_string($new_template), "dateline" => TIME_NOW,);
-        $db->update_query("templates", $update, "tid = '" . (int)$master_template['tid'] . "'");
-        echo "Master-Template '{$template['title']}' wurde aktualisiert.<br>";
-      }
-    } else {
-      //existiert noch gar nicht also neu hinzufügen
-      $insert = array(
-        "title" => $template['title'],
-        "template" => $new_template,
-        "sid" => -2,
-        "version" => $template['version'] ?? "",
-        "dateline" => TIME_NOW,
+    if (!empty($master_template["tid"])) {
+
+      $update = array(
+        "template" => $template["template"],
+        "version" => $template["version"] ?? "",
+        "dateline" => TIME_NOW
       );
-      $db->insert_query("templates", $insert);
-      echo "Master-Template '{$template['title']}' wurde hinzugefügt.<br>";
+
+      $db->update_query("templates",  $update,  "tid = '" . (int)$master_template["tid"] . "'");
+    } else {
+
+      $insert = array(
+        "title" => $template["title"],
+        "template" => $template["template"],
+        "sid" => -2,
+        "version" => $template["version"] ?? "",
+        "dateline" => TIME_NOW
+      );
+
+      $db->insert_query("templates",  $insert);
     }
   }
+  echo "Alle Master-Templates wurden aktualisiert.";
 }
-
 
 // function risuenaupdatefile_normalize($string)
 // {
